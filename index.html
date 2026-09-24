@@ -386,6 +386,29 @@ const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const BOX = '\u2610';
 
+const DRAFT_TOOL = {
+  name: 'write_draft',
+  description: 'Record the finished delegation memo.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      subject: { type: 'string' },
+      greeting: { type: 'string' },
+      context: { type: 'string' },
+      result_statement: { type: 'string' },
+      criteria: { type: 'array', items: { type: 'string' }, minItems: 3, maxItems: 5 },
+      authority_sentence: { type: 'string' },
+      deadline_iso: { type: 'string', description: 'YYYY-MM-DDTHH:MM' },
+      deadline_sentence: { type: 'string', description: 'Must contain the literal token {DEADLINE}' },
+      checkpoint_iso: { type: ['string', 'null'], description: 'YYYY-MM-DDTHH:MM or null' },
+      checkpoint_sentence: { type: ['string', 'null'], description: 'Contains {CHECKPOINT}, or null' },
+      checkback_request: { type: 'string' },
+      closing: { type: 'string' }
+    },
+    required: ['subject', 'greeting', 'context', 'result_statement', 'criteria', 'authority_sentence', 'deadline_iso', 'deadline_sentence', 'checkpoint_iso', 'checkpoint_sentence', 'checkback_request', 'closing']
+  }
+};
+  
 const DEFAULT_INTAKE = {
   task: '', why: '', name: '', email: '', rtype: 'Student Worker', experience: 'Some',
   resources: '', effort: 'half a day', authority: 'Recommend Then Act', checkpoint: 'Auto'
@@ -607,7 +630,7 @@ function buildPrompt() {
       : '6. Do not include a checkpoint. Set checkpoint_iso and checkpoint_sentence to null.',
     '7. Never use a dash of any kind as a clause separator. Use commas, periods, or separate sentences. Plain ASCII punctuation only.',
     '8. greeting is short, like "Hi Maria,". context explains why the work matters in two or three sentences. checkback_request asks them to reply confirming it makes sense and to raise questions early. closing is one short line of thanks with no signature or name after it. subject is under 70 characters.',
-    '9. Respond with JSON only, no markdown fences and no commentary, exactly matching this shape:',
+    '9. Deliver the memo by calling the write_draft tool once. Its fields follow this shape:',
     '{"subject":"","greeting":"","context":"","result_statement":"","criteria":["","",""],"authority_sentence":"","deadline_iso":"YYYY-MM-DDTHH:MM","deadline_sentence":"... {DEADLINE} ...","checkpoint_iso":"YYYY-MM-DDTHH:MM or null","checkpoint_sentence":"... {CHECKPOINT} ... or null","checkback_request":"","closing":""}'
   ].join('\n');
 
@@ -670,6 +693,8 @@ async function generateDraft() {
         model: CLAUDE_MODEL,
         max_tokens: 1500,
         thinking: { type: 'disabled' },
+        tools: [DRAFT_TOOL],
+        tool_choice: { type: 'tool', name: 'write_draft' },
         system: p.system,
         messages: [{ role: 'user', content: p.user }]
       })
@@ -692,21 +717,48 @@ async function generateDraft() {
   }
 }
 
-function parseReply(data) {
-  const blocks = Array.isArray(data && data.content) ? data.content : [];
-  const text = blocks.filter((b) => b && b.type === 'text').map((b) => b.text || '').join('\n');
-  try {
-    const clean = text.replace(/```json|```/g, '').trim();
-    const start = clean.indexOf('{');
-    const end = clean.lastIndexOf('}');
-    if (start < 0 || end <= start) throw new Error('no JSON object');
-    return JSON.parse(clean.slice(start, end + 1));
-  } catch (e) {
-    console.warn('parseReply failed', { blockTypes: blocks.map((b) => b && b.type), stop_reason: data && data.stop_reason, text: text });
-    throw new Error('The reply could not be read as a draft. Tap Regenerate.');
+function escapeControlChars(src) {
+  let out = '';
+  let inStr = false;
+  let esc = false;
+  for (let k = 0; k < src.length; k++) {
+    const ch = src[k];
+    if (inStr) {
+      if (esc) { esc = false; out += ch; continue; }
+      if (ch === '\\') { esc = true; out += ch; continue; }
+      if (ch === '"') { inStr = false; out += ch; continue; }
+      if (ch === '\n') { out += '\\n'; continue; }
+      if (ch === '\r') { out += '\\r'; continue; }
+      if (ch === '\t') { out += '\\t'; continue; }
+      out += ch;
+    } else {
+      if (ch === '"') inStr = true;
+      out += ch;
+    }
   }
+  return out;
 }
 
+function parseReply(data) {
+  const blocks = Array.isArray(data && data.content) ? data.content : [];
+  const tool = blocks.find((b) => b && b.type === 'tool_use' && b.name === 'write_draft');
+  if (tool && tool.input && typeof tool.input === 'object') return tool.input;
+
+  const text = blocks.filter((b) => b && b.type === 'text').map((b) => b.text || '').join('\n');
+  const clean = text.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  const end = clean.lastIndexOf('}');
+  if (start >= 0 && end > start) {
+    const slice = clean.slice(start, end + 1);
+    try { return JSON.parse(slice); } catch (e1) {
+      try { return JSON.parse(escapeControlChars(slice)); } catch (e2) { /* fall through */ }
+    }
+  }
+  const stop = data && data.stop_reason;
+  console.warn('parseReply failed', { blockTypes: blocks.map((b) => b && b.type), stop_reason: stop, text: text });
+  throw new Error('The reply could not be read as a draft (' + (stop || 'no stop reason') + '). Tap Regenerate.');
+}
+  
 function tidy(v) {
   if (typeof v !== 'string') return '';
   return v.replace(/\s*[\u2013\u2014]\s*/g, ', ').replace(/\s+--\s+/g, ', ').trim();
