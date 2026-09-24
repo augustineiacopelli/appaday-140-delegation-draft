@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>140 &#183; Delegation Draft</title>
+<meta name="description" content="Turn a task into a clear delegation message that defines the outcome, the authority, and the deadline.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EFE8D8;
+  --sheet:#FBF7EE;
+  --ink:#1B2230;
+  --ink-soft:#555C69;
+  --rule:#D5C9B1;
+  --accent:#1F5E57;
+  --accent-ink:#FFFFFF;
+  --accent-tint:#D8E8E2;
+  --danger:#8A2E2E;
+  --serif:'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans:'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;min-height:100dvh;display:flex;flex-direction:column;
+  background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;
+}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Header */
+.bar{
+  display:flex;align-items:center;gap:12px;padding:8px 16px;
+  padding-top:calc(8px + env(safe-area-inset-top, 0px));
+  border-bottom:1px solid var(--rule);background:var(--paper);
+}
+.brand{font-size:.85rem;font-weight:500;text-decoration:none;color:var(--ink-soft);min-height:44px;display:inline-flex;align-items:center}
+.brand:hover{color:var(--accent)}
+.bar h1{font-family:var(--serif);font-weight:600;font-size:1.15rem;margin:0;flex:1;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{
+  min-width:44px;min-height:44px;border:1px solid transparent;border-radius:8px;background:transparent;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;cursor:pointer;
+}
+.icon-btn:hover{border-color:var(--rule);background:var(--sheet)}
+.icon-btn svg{width:22px;height:22px}
+.count{font-size:.75rem;background:var(--ink);color:var(--paper);border-radius:10px;padding:0 7px;line-height:1.5}
+.count[hidden]{display:none}
+@media (max-width:420px){ .hist-label{display:none} .brand{display:none} }
+
+/* Layout */
+main{
+  flex:1;width:100%;max-width:1200px;margin:0 auto;padding:20px 16px 32px;
+  display:grid;gap:24px;align-content:start;
+}
+@media (min-width:900px){
+  main{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start;padding:32px 24px 48px}
+}
+.panel h2{font-family:var(--serif);font-weight:600;font-size:1.6rem;line-height:1.15;margin:0 0 4px;letter-spacing:-.015em}
+.panel .lede{margin:0 0 18px;color:var(--ink-soft);max-width:52ch}
+
+/* Intake */
+fieldset{border:0;border-top:1px solid var(--rule);margin:0;padding:16px 0 4px}
+legend{font-family:var(--serif);font-weight:600;font-size:1.05rem;padding:0 8px 0 0}
+.field{margin:0 0 14px}
+.field > label,.field > .label{display:block;font-weight:500;font-size:.92rem;margin-bottom:6px}
+.hint{font-weight:400;color:var(--ink-soft)}
+input[type=text],input[type=email],input[type=password],input[type=datetime-local],select,textarea{
+  width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:#FFFDF8;
+}
+textarea{resize:vertical;line-height:1.45}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink) 50%),linear-gradient(135deg,var(--ink) 50%,transparent 50%);background-position:calc(100% - 18px) 55%,calc(100% - 13px) 55%;background-size:5px 5px;background-repeat:no-repeat;padding-right:34px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-tint)}
+.two{display:grid;gap:0 12px}
+@media (min-width:520px){ .two{grid-template-columns:1fr 1fr} }
+
+.seg{display:flex;border:1px solid var(--ink);border-radius:8px;overflow:hidden;background:#FFFDF8}
+.seg button{
+  flex:1 1 0;min-height:44px;border:0;background:transparent;padding:6px 8px;cursor:pointer;
+  font-size:.88rem;line-height:1.2;border-left:1px solid var(--rule);
+}
+.seg button:first-child{border-left:0}
+.seg button[aria-checked="true"]{background:var(--ink);color:var(--paper);font-weight:500}
+.seg-note{font-size:.84rem;color:var(--ink-soft);margin:6px 0 0}
+
+.primary{
+  min-height:48px;padding:0 22px;border-radius:8px;border:1px solid var(--accent);
+  background:var(--accent);color:var(--accent-ink);font-weight:600;cursor:pointer;
+}
+.primary:hover{filter:brightness(1.08)}
+.primary[disabled],.ghost[disabled]{opacity:.55;cursor:progress}
+.ghost{
+  min-height:44px;padding:0 16px;border-radius:8px;border:1px solid var(--ink);background:transparent;cursor:pointer;font-weight:500;
+}
+.ghost:hover{background:var(--sheet)}
+.gen-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:6px}
+.gen-row .primary{flex:1 1 auto}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-2px;margin-right:8px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Draft */
+.empty{
+  border:1px dashed var(--rule);border-radius:10px;padding:28px 22px;color:var(--ink-soft);background:rgba(251,247,238,.5)
+}
+.empty p{margin:0 0 8px;max-width:48ch}
+.empty strong{color:var(--ink);font-family:var(--serif);font-weight:600;font-size:1.1rem;display:block;margin-bottom:6px}
+.skeleton{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;padding:28px 24px}
+.skeleton i{display:block;height:12px;border-radius:3px;background:var(--rule);margin:0 0 14px;opacity:.7;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.35}}
+
+.memo{
+  background:var(--sheet);border:1px solid var(--rule);border-radius:3px;
+  padding:22px 18px 20px;box-shadow:0 1px 0 var(--rule), 0 14px 30px -22px rgba(27,34,48,.45);
+}
+@media (min-width:600px){ .memo{padding:30px 32px 26px} }
+.memo-head{border-bottom:3px double var(--ink);padding-bottom:10px;margin-bottom:18px}
+.memo-row{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px;min-height:44px}
+.memo-key{font-family:var(--serif);font-weight:600;font-size:.95rem;color:var(--ink-soft)}
+.memo-to{font-weight:500;overflow-wrap:anywhere;padding-left:6px}
+.memo-to span{color:var(--ink-soft);font-weight:400}
+.memo textarea.flow.subject{font-family:var(--serif);font-weight:600;font-size:1.15rem;line-height:1.3;margin:0}
+.memo textarea.flow{
+  display:block;border-color:transparent;background:transparent;padding:6px;margin:0 0 10px;resize:none;overflow:hidden;min-height:0;
+}
+.memo textarea.flow:hover{border-color:var(--rule)}
+.memo textarea.flow:focus{background:#FFFDF8}
+.part{margin:0 0 16px}
+.part-label{display:block;font-family:var(--serif);font-weight:600;font-size:.98rem;margin:0 0 4px 6px}
+.goal textarea.flow{
+  background:var(--accent-tint);border-left:4px solid var(--accent);border-radius:2px;
+  font-family:var(--serif);font-size:1.12rem;font-weight:500;line-height:1.4;padding:10px 12px;
+}
+.goal textarea.flow:hover,.goal textarea.flow:focus{background:var(--accent-tint)}
+.crit-list{list-style:none;margin:0 0 6px;padding:0}
+.crit-row{display:grid;grid-template-columns:28px 1fr 44px;align-items:center;gap:4px;margin-bottom:4px}
+.crit-row::before{content:"\2610";font-size:1.35rem;line-height:1;text-align:center;color:var(--accent)}
+.crit-row input{background:transparent;border-color:transparent}
+.crit-row input:hover{border-color:var(--rule)}
+.crit-row input:focus{background:#FFFDF8}
+.x-btn{min-width:44px;min-height:44px;border:0;background:transparent;border-radius:6px;cursor:pointer;color:var(--ink-soft);font-size:1.35rem;line-height:1}
+.x-btn:hover{background:var(--paper);color:var(--danger)}
+.link-btn{min-height:44px;border:0;background:transparent;color:var(--accent);font-weight:500;cursor:pointer;padding:0 6px;text-decoration:underline;text-underline-offset:3px}
+.when{border:1px solid var(--rule);border-radius:6px;padding:12px;margin:0 0 14px;background:#FFFDF8}
+.when-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.when-top label,.when-top .label{font-family:var(--serif);font-weight:600}
+.when input[type=datetime-local]{max-width:260px}
+.when textarea.flow{margin:8px 0 0;padding:6px 0;background:transparent}
+.token-note{font-size:.8rem;color:var(--ink-soft);margin:4px 0 0}
+.when.off input,.when.off textarea{opacity:.45}
+.switch{
+  display:inline-flex;align-items:center;gap:10px;min-height:44px;border:0;background:transparent;cursor:pointer;padding:0;font-weight:500;
+}
+.switch .track{width:44px;height:26px;border-radius:13px;background:var(--rule);position:relative;transition:background .15s}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch[aria-checked="true"] .track{background:var(--accent)}
+.switch[aria-checked="true"] .track::after{transform:translateX(18px)}
+.sig{font-family:var(--serif);font-style:italic;font-size:1.05rem;padding:2px 6px 0}
+.sig.missing{font-family:var(--sans);font-style:normal;font-size:.85rem;color:var(--ink-soft)}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.actions .primary{flex:1 1 140px}
+.actions .ghost{flex:1 1 110px}
+.actions [hidden]{display:none}
+.preview-wrap h3{font-family:var(--serif);font-weight:600;font-size:1rem;margin:0 0 6px}
+.preview{
+  margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-family:var(--sans);font-size:.92rem;line-height:1.55;
+  background:rgba(255,253,248,.6);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;color:var(--ink);
+}
+
+/* Footer */
+footer{border-top:1px solid var(--rule);padding:14px 16px;padding-bottom:calc(14px + env(safe-area-inset-bottom, 0px));font-size:.85rem;color:var(--ink-soft);text-align:center}
+footer a{display:inline-flex;align-items:center;min-height:44px}
+
+/* Modal and sheet */
+.scrim{position:fixed;inset:0;background:rgba(27,34,48,.45);display:flex;z-index:40}
+.scrim[hidden]{display:none}
+.modal{align-items:center;justify-content:center;padding:16px}
+.dialog{background:var(--sheet);border-radius:10px;padding:22px;width:100%;max-width:440px;max-height:90dvh;overflow:auto;border:1px solid var(--rule)}
+.dialog h2,.sheet h2{font-family:var(--serif);font-weight:600;font-size:1.35rem;margin:0 0 4px}
+.dialog .lede,.sheet .lede{margin:0 0 16px;color:var(--ink-soft);font-size:.9rem}
+.dialog-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.sheet-scrim{align-items:flex-end;justify-content:center}
+.sheet{
+  background:var(--sheet);width:100%;max-width:720px;max-height:82dvh;overflow:auto;border-radius:14px 14px 0 0;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom, 0px));transform:translateY(100%);transition:transform .22s ease-out;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--rule);margin:0 auto 12px}
+.hist-list{list-style:none;margin:0;padding:0}
+.hist-item{border-top:1px solid var(--rule);padding:12px 0;display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.hist-item h3{margin:0;font-size:1rem;font-weight:600;overflow-wrap:anywhere}
+.hist-item p{margin:0;color:var(--ink-soft);font-size:.85rem}
+.hist-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.hist-btns button{min-height:44px;padding:0 12px;border-radius:8px;border:1px solid var(--ink);background:transparent;cursor:pointer;font-size:.88rem}
+.hist-btns button.armed{background:var(--danger);border-color:var(--danger);color:#fff}
+.hist-empty{color:var(--ink-soft);padding:12px 0}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom, 0px));transform:translate(-50%,20px);
+  background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:8px;font-size:.92rem;max-width:calc(100vw - 32px);
+  opacity:0;pointer-events:none;transition:opacity .2s, transform .2s;z-index:60;text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="brand" href="https://augustineiacopelli.github.io/appaday/">AppADay</a>
+  <h1>140 &#183; Delegation Draft</h1>
+  <button class="icon-btn" id="btn-history" type="button" aria-label="Open history">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 7v5l3 2"/></svg>
+    <span class="hist-label">History</span><span class="count" id="hist-count" hidden>0</span>
+  </button>
+  <button class="icon-btn" id="btn-settings" type="button" aria-label="Open settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
+</header>
+
+<main>
+  <section class="panel intake" aria-labelledby="intake-title">
+    <h2 id="intake-title">The handoff</h2>
+    <p class="lede">Describe the work and the person taking it on. The draft names the result you want, how much say they have, and when it is due.</p>
+
+    <form id="intake" autocomplete="off" onsubmit="return false">
+      <fieldset>
+        <legend>The work</legend>
+        <div class="field">
+          <label for="f-task">Task</label>
+          <textarea id="f-task" data-key="task" rows="3" placeholder="Update the fall tutoring schedule on the website and in the front desk binder"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-why">Why it matters</label>
+          <textarea id="f-why" data-key="why" rows="2" placeholder="Students keep showing up for sessions that moved"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-resources">Resources and access <span class="hint">(optional)</span></label>
+          <textarea id="f-resources" data-key="resources" rows="2" placeholder="Edit access to the site, the scheduling spreadsheet, the binder at the front desk"></textarea>
+        </div>
+        <div class="field">
+          <label for="f-effort">Effort estimate</label>
+          <select id="f-effort" data-key="effort">
+            <option>under an hour</option>
+            <option>half a day</option>
+            <option>one day</option>
+            <option>a few days</option>
+            <option>a week or more</option>
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The person</legend>
+        <div class="two">
+          <div class="field">
+            <label for="f-name">First name</label>
+            <input type="text" id="f-name" data-key="name" placeholder="Maria">
+          </div>
+          <div class="field">
+            <label for="f-email">Email <span class="hint">(optional)</span></label>
+            <input type="email" id="f-email" data-key="email" placeholder="maria@example.edu" inputmode="email">
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="l-rtype">Role</span>
+          <div class="seg" role="radiogroup" aria-labelledby="l-rtype" data-key="rtype">
+            <button type="button" role="radio" data-value="Student Worker">Student Worker</button>
+            <button type="button" role="radio" data-value="Staff">Staff</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="l-exp">Experience with this kind of task</span>
+          <div class="seg" role="radiogroup" aria-labelledby="l-exp" data-key="experience">
+            <button type="button" role="radio" data-value="New">New</button>
+            <button type="button" role="radio" data-value="Some">Some</button>
+            <button type="button" role="radio" data-value="Seasoned">Seasoned</button>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>The latitude</legend>
+        <div class="field">
+          <span class="label" id="l-auth">Authority</span>
+          <div class="seg" role="radiogroup" aria-labelledby="l-auth" data-key="authority">
+            <button type="button" role="radio" data-value="Check With Me First">Check With Me First</button>
+            <button type="button" role="radio" data-value="Recommend Then Act">Recommend Then Act</button>
+            <button type="button" role="radio" data-value="Fully Decide">Fully Decide</button>
+          </div>
+          <p class="seg-note" id="auth-note"></p>
+        </div>
+        <div class="field">
+          <span class="label" id="l-cp">Midpoint checkpoint</span>
+          <div class="seg" role="radiogroup" aria-labelledby="l-cp" data-key="checkpoint">
+            <button type="button" role="radio" data-value="Auto">Auto</button>
+            <button type="button" role="radio" data-value="On">On</button>
+            <button type="button" role="radio" data-value="Off">Off</button>
+          </div>
+          <p class="seg-note" id="cp-note"></p>
+        </div>
+      </fieldset>
+
+      <div class="gen-row">
+        <button type="button" class="primary" id="btn-generate">Draft the handoff</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel draft" aria-labelledby="draft-title" aria-live="polite">
+    <h2 id="draft-title">The memo</h2>
+    <p class="lede">Every line is editable. The plain text below is exactly what gets copied, emailed, or shared.</p>
+    <div id="draft-body"></div>
+    <div class="actions" id="actions" hidden>
+      <button type="button" class="primary" id="btn-copy">Copy</button>
+      <button type="button" class="ghost" id="btn-email">Email</button>
+      <button type="button" class="ghost" id="btn-share">Share</button>
+      <button type="button" class="ghost" id="btn-save">Save to history</button>
+      <button type="button" class="ghost" id="btn-regen">Regenerate</button>
+    </div>
+    <div class="preview-wrap" id="preview-wrap" hidden>
+      <h3>Plain text</h3>
+      <pre class="preview" id="preview"></pre>
+    </div>
+  </section>
+</main>
+
+<footer>
+  AppADay 140. Your API key stays in this browser. <a href="https://augustineiacopelli.github.io/appaday/">See every app in the portfolio</a>
+</footer>
+
+<div class="scrim modal" id="settings-scrim" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+    <h2 id="settings-title">Settings</h2>
+    <p class="lede">Stored only in this browser.</p>
+    <div class="field">
+      <label for="s-key">Anthropic API key</label>
+      <input type="password" id="s-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="s-session">Session name <span class="hint">(labels your history)</span></label>
+      <input type="text" id="s-session" placeholder="Fall front desk">
+    </div>
+    <div class="field">
+      <label for="s-sig">Signature name</label>
+      <input type="text" id="s-sig" placeholder="Stino">
+    </div>
+    <div class="dialog-actions">
+      <button type="button" class="ghost" id="btn-settings-cancel">Cancel</button>
+      <button type="button" class="primary" id="btn-settings-save">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim sheet-scrim" id="history-scrim" hidden>
+  <div class="sheet" id="history-sheet" role="dialog" aria-modal="true" aria-labelledby="history-title">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="sheet-head">
+      <h2 id="history-title">Saved handoffs</h2>
+      <button type="button" class="icon-btn" id="btn-history-close" aria-label="Close history"><span aria-hidden="true" style="font-size:1.5rem">&times;</span></button>
+    </div>
+    <p class="lede">The 25 most recent drafts you saved, newest first.</p>
+    <ul class="hist-list" id="hist-list"></ul>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const CLAUDE_MODEL = 'claude-sonnet-5';
+const API_URL = 'https://api.anthropic.com/v1/messages';
+const KEYS = { settings: 'appaday-140-settings', intake: 'appaday-140-intake', history: 'appaday-140-history' };
+const HISTORY_CAP = 25;
+const TZ = 'America/Chicago';
+const EFFORTS = ['under an hour', 'half a day', 'one day', 'a few days', 'a week or more'];
+const EFFORT_BUSINESS_DAYS = [1, 2, 3, 5, 10];
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const BOX = '\u2610';
+
+const DEFAULT_INTAKE = {
+  task: '', why: '', name: '', email: '', rtype: 'Student Worker', experience: 'Some',
+  resources: '', effort: 'half a day', authority: 'Recommend Then Act', checkpoint: 'Auto'
+};
+
+const AUTHORITY = {
+  'Check With Me First': {
+    note: 'They bring you options. You make the call.',
+    rule: 'They must bring the supervisor their options or recommendation and wait for a go ahead before making any decision or taking any irreversible step.',
+    fallback: 'Before you make any decisions on this, please bring me your options and I will make the call with you.'
+  },
+  'Recommend Then Act': {
+    note: 'They tell you the plan, then proceed unless you object.',
+    rule: 'They should decide on an approach, tell the supervisor what they plan to do, and then go ahead unless the supervisor says otherwise.',
+    fallback: 'Please let me know what you plan to do, and then go ahead unless I say otherwise.'
+  },
+  'Fully Decide': {
+    note: 'They own the decisions and report back when done.',
+    rule: 'They have full authority to make every decision on this task and only need to report what they decided once it is done.',
+    fallback: 'You have full authority to make the decisions on this, so just let me know what you decided once it is done.'
+  }
+};
+
+const GENERIC_CRITERIA = [
+  'I have reviewed it and signed off',
+  'Anyone affected knows about the change',
+  'Nothing is left open without a note explaining why'
+];
+
+function loadJSON(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    const val = JSON.parse(raw);
+    return val == null ? fallback : val;
+  } catch (e) {
+    return fallback;
+  }
+}
+function saveJSON(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+const state = {
+  intake: Object.assign({}, DEFAULT_INTAKE, loadJSON(KEYS.intake, {})),
+  draft: null,
+  settings: Object.assign({ apiKey: '', sessionName: '', signature: '' }, loadJSON(KEYS.settings, {})),
+  history: loadJSON(KEYS.history, []),
+  busy: false
+};
+if (!Array.isArray(state.history)) state.history = [];
+
+const $ = (id) => document.getElementById(id);
+function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+function el(tag, attrs, kids) {
+  const node = document.createElement(tag);
+  if (attrs) {
+    Object.keys(attrs).forEach((k) => {
+      const v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'text') node.textContent = v;
+      else if (k === 'className') node.className = v;
+      else if (k === 'value') node.value = v;
+      else node.setAttribute(k, v === true ? '' : v);
+    });
+  }
+  (kids || []).forEach((c) => { if (c) node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+  return node;
+}
+
+/* ---------- Toast ---------- */
+let toastTimer = null;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ---------- Dates ---------- */
+function pad(n) { return String(n).padStart(2, '0'); }
+function chicagoNow() {
+  const d = new Date();
+  const parts = {};
+  new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, weekday: 'long', year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+  }).formatToParts(d).forEach((p) => { parts[p.type] = p.value; });
+  const hour = parts.hour === '24' ? '00' : parts.hour;
+  const pretty = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ, weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit'
+  }).format(d).replace(/\s/g, ' ');
+  return { date: parts.year + '-' + parts.month + '-' + parts.day, time: hour + ':' + parts.minute, weekday: parts.weekday, pretty: pretty };
+}
+function parseISO(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso || '');
+  if (!m) return null;
+  return { y: +m[1], mo: +m[2], d: +m[3], h: +m[4], mi: +m[5] };
+}
+function validISO(iso) {
+  const p = parseISO(iso);
+  if (!p || p.mo < 1 || p.mo > 12 || p.d < 1 || p.h > 23 || p.mi > 59) return false;
+  return new Date(Date.UTC(p.y, p.mo - 1, p.d)).getUTCDate() === p.d;
+}
+function weekdayOf(dateStr) { return new Date(dateStr + 'T00:00:00Z').getUTCDay(); }
+function addBusinessDays(dateStr, n) {
+  const dt = new Date(dateStr + 'T00:00:00Z');
+  let added = 0;
+  while (added < n) {
+    dt.setUTCDate(dt.getUTCDate() + 1);
+    const w = dt.getUTCDay();
+    if (w !== 0 && w !== 6) added++;
+  }
+  return dt.toISOString().slice(0, 10);
+}
+function businessDaysBetween(a, b) {
+  const dt = new Date(a + 'T00:00:00Z');
+  const end = new Date(b + 'T00:00:00Z');
+  let c = 0;
+  while (dt < end) {
+    dt.setUTCDate(dt.getUTCDate() + 1);
+    const w = dt.getUTCDay();
+    if (w !== 0 && w !== 6) c++;
+  }
+  return c;
+}
+function effortIndex() { return Math.max(0, EFFORTS.indexOf(state.intake.effort)); }
+function defaultDeadline() {
+  return addBusinessDays(chicagoNow().date, EFFORT_BUSINESS_DAYS[effortIndex()]) + 'T15:00';
+}
+function defaultCheckpoint(deadlineIso) {
+  const today = chicagoNow().date;
+  const span = businessDaysBetween(today, deadlineIso.slice(0, 10));
+  return addBusinessDays(today, Math.max(1, Math.floor(span / 2))) + 'T10:00';
+}
+function checkpointWanted() {
+  const c = state.intake.checkpoint;
+  if (c === 'On') return true;
+  if (c === 'Off') return false;
+  return effortIndex() >= 3;
+}
+function formatWhen(iso) {
+  const p = parseISO(iso);
+  if (!p) return 'a time we agree on';
+  const w = new Date(Date.UTC(p.y, p.mo - 1, p.d)).getUTCDay();
+  const h12 = p.h % 12 === 0 ? 12 : p.h % 12;
+  return DAYS[w] + ', ' + MONTHS[p.mo - 1] + ' ' + p.d + ' at ' + h12 + ':' + pad(p.mi) + ' ' + (p.h < 12 ? 'AM' : 'PM');
+}
+
+/* ---------- Intake ---------- */
+function fillIntake() {
+  document.querySelectorAll('#intake [data-key]').forEach((node) => {
+    const key = node.dataset.key;
+    if (node.classList.contains('seg')) {
+      node.querySelectorAll('button').forEach((b) => {
+        b.setAttribute('aria-checked', b.dataset.value === state.intake[key] ? 'true' : 'false');
+      });
+    } else {
+      node.value = state.intake[key] || '';
+    }
+  });
+  updateIntakeNotes();
+}
+function updateIntakeNotes() {
+  const a = AUTHORITY[state.intake.authority];
+  $('auth-note').textContent = a ? a.note : '';
+  const on = checkpointWanted();
+  const mode = state.intake.checkpoint;
+  $('cp-note').textContent = mode === 'Auto'
+    ? (on ? 'Auto adds one because this runs a few days or more.' : 'Auto skips it for work shorter than a few days.')
+    : (on ? 'A midpoint check in will be scheduled.' : 'No midpoint check in.');
+}
+function onIntakeInput(e) {
+  const node = e.target;
+  if (!node.dataset || !node.dataset.key) return;
+  state.intake[node.dataset.key] = node.value;
+  saveJSON(KEYS.intake, state.intake);
+  if (node.dataset.key === 'effort') updateIntakeNotes();
+}
+function onSegClick(e) {
+  const btn = e.target.closest('.seg button');
+  if (!btn) return;
+  const group = btn.parentNode;
+  state.intake[group.dataset.key] = btn.dataset.value;
+  group.querySelectorAll('button').forEach((b) => b.setAttribute('aria-checked', b === btn ? 'true' : 'false'));
+  saveJSON(KEYS.intake, state.intake);
+  updateIntakeNotes();
+}
+
+/* ---------- Prompt ---------- */
+function buildPrompt() {
+  const now = chicagoNow();
+  const i = state.intake;
+  const auth = AUTHORITY[i.authority] || AUTHORITY['Recommend Then Act'];
+  const wantCp = checkpointWanted();
+  const expGuide = {
+    'New': 'They are new to this kind of task. Give a little more context and name the resources they can use, and suggest one sensible place to start, while still leaving the method to them.',
+    'Some': 'They have some experience. Give light pointers only where a mistake would be costly.',
+    'Seasoned': 'They are seasoned. Give no method guidance at all. Trust their judgment and keep it brief.'
+  }[i.experience] || '';
+
+  const system = [
+    'You write delegation messages for a supervisor in a university office handing work to a ' + i.rtype.toLowerCase() + '.',
+    'Rules:',
+    '1. Define the outcome, not the method. result_statement names the finished result in one or two sentences. criteria lists 3 to 5 short, observable checks that prove the work is done. Criteria are conditions to tick off, never steps.',
+    '2. Calibrate detail to experience. ' + expGuide,
+    '3. authority_sentence must state this authority level exactly and unambiguously, addressed to the recipient: ' + auth.rule,
+    '4. Keep a warm, collaborative tone, especially about the deadline. Frame it as a shared plan, for example "Could we aim for" or "Let\'s plan on", never as an order.',
+    '5. Choose deadline_iso on a weekday (Monday to Friday) between 09:00 and 16:30, proportional to the effort estimate: under an hour means the next business day, half a day means about 2 business days, one day means about 3 business days, a few days means about one week, a week or more means about two weeks. deadline_sentence must contain the literal token {DEADLINE} where the date and time go, and must not write the date itself.',
+    wantCp
+      ? '6. Include a midpoint checkpoint. checkpoint_iso is a weekday between 09:00 and 16:30 roughly halfway between now and the deadline. checkpoint_sentence invites a quick check in and contains the literal token {CHECKPOINT} instead of the date.'
+      : '6. Do not include a checkpoint. Set checkpoint_iso and checkpoint_sentence to null.',
+    '7. Never use a dash of any kind as a clause separator. Use commas, periods, or separate sentences. Plain ASCII punctuation only.',
+    '8. greeting is short, like "Hi Maria,". context explains why the work matters in two or three sentences. checkback_request asks them to reply confirming it makes sense and to raise questions early. closing is one short line of thanks with no signature or name after it. subject is under 70 characters.',
+    '9. Respond with JSON only, no markdown fences and no commentary, exactly matching this shape:',
+    '{"subject":"","greeting":"","context":"","result_statement":"","criteria":["","",""],"authority_sentence":"","deadline_iso":"YYYY-MM-DDTHH:MM","deadline_sentence":"... {DEADLINE} ...","checkpoint_iso":"YYYY-MM-DDTHH:MM or null","checkpoint_sentence":"... {CHECKPOINT} ... or null","checkback_request":"","closing":""}'
+  ].join('\n');
+
+  const user = [
+    'Right now in America/Chicago it is ' + now.weekday + ', ' + now.date + ' at ' + now.time + ' (' + now.pretty + ').',
+    'Recipient first name: ' + (i.name.trim() || 'there'),
+    'Recipient role: ' + i.rtype,
+    'Experience with this kind of task: ' + i.experience,
+    'Task: ' + i.task.trim(),
+    'Why it matters: ' + (i.why.trim() || 'not specified'),
+    'Resources and access they have: ' + (i.resources.trim() || 'not specified'),
+    'Effort estimate: ' + i.effort,
+    'Authority level: ' + i.authority,
+    'Checkpoint: ' + (wantCp ? 'include one' : 'none')
+  ].join('\n');
+
+  return { system: system, user: user };
+}
+
+/* ---------- API ---------- */
+function setLoading(on) {
+  state.busy = on;
+  const gen = $('btn-generate');
+  gen.disabled = on;
+  $('btn-regen').disabled = on;
+  gen.textContent = '';
+  if (on) {
+    gen.appendChild(el('span', { className: 'spin', 'aria-hidden': 'true' }));
+    gen.appendChild(document.createTextNode('Drafting...'));
+    if (!state.draft) renderSkeleton();
+  } else {
+    gen.textContent = 'Draft the handoff';
+  }
+}
+
+async function generateDraft() {
+  if (state.busy) return;
+  if (!state.settings.apiKey) {
+    toast('Add your Anthropic API key in Settings to draft.');
+    openSettings();
+    return;
+  }
+  const i = state.intake;
+  if (!i.task.trim()) { toast('Describe the task first.'); $('f-task').focus(); return; }
+  if (!i.name.trim()) { toast("Add the recipient's first name."); $('f-name').focus(); return; }
+
+  const wantCp = checkpointWanted();
+  setLoading(true);
+  try {
+    const p = buildPrompt();
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'x-api-key': state.settings.apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: CLAUDE_MODEL,
+        max_tokens: 1500,
+        thinking: { type: 'disabled' },
+        system: p.system,
+        messages: [{ role: 'user', content: p.user }]
+      })
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) { data = {}; }
+    if (!res.ok) {
+      const msg = (data && data.error && data.error.message) || res.statusText || 'request failed';
+      throw new Error('API error ' + res.status + ': ' + msg);
+    }
+    state.draft = validateDraft(parseReply(data), wantCp);
+    renderDraft();
+    toast('Draft ready.');
+  } catch (err) {
+    console.error(err);
+    toast(err && err.message ? err.message : 'Drafting failed. Try again.');
+    if (!state.draft) renderEmpty();
+  } finally {
+    setLoading(false);
+  }
+}
+
+function parseReply(data) {
+  const blocks = Array.isArray(data && data.content) ? data.content : [];
+  const text = blocks.filter((b) => b && b.type === 'text').map((b) => b.text || '').join('\n');
+  try {
+    const clean = text.replace(/```json|```/g, '').trim();
+    const start = clean.indexOf('{');
+    const end = clean.lastIndexOf('}');
+    if (start < 0 || end <= start) throw new Error('no JSON object');
+    return JSON.parse(clean.slice(start, end + 1));
+  } catch (e) {
+    console.warn('parseReply failed', { blockTypes: blocks.map((b) => b && b.type), stop_reason: data && data.stop_reason, text: text });
+    throw new Error('The reply could not be read as a draft. Tap Regenerate.');
+  }
+}
+
+function tidy(v) {
+  if (typeof v !== 'string') return '';
+  return v.replace(/\s*[\u2013\u2014]\s*/g, ', ').replace(/\s+--\s+/g, ', ').trim();
+}
+
+function validateDraft(raw, wantCp) {
+  if (!raw || typeof raw !== 'object') throw new Error('The reply was empty. Tap Regenerate.');
+  const i = state.intake;
+  const name = i.name.trim() || 'there';
+  const auth = AUTHORITY[i.authority] || AUTHORITY['Recommend Then Act'];
+  const shortTask = i.task.trim().split(/\s+/).slice(0, 8).join(' ');
+  const fb = {
+    subject: 'Can you take this on: ' + shortTask,
+    greeting: 'Hi ' + name + ',',
+    context: i.why.trim() || 'I would appreciate your help with this.',
+    result_statement: i.task.trim(),
+    authority_sentence: auth.fallback,
+    deadline_sentence: 'Could we aim to have this wrapped up by {DEADLINE}?',
+    checkback_request: 'When you get a chance, reply to let me know this makes sense, and ask me anything that is unclear.',
+    closing: 'Thank you for taking this on.'
+  };
+  const d = {};
+  Object.keys(fb).forEach((k) => { d[k] = tidy(raw[k]) || fb[k]; });
+
+  let crit = Array.isArray(raw.criteria) ? raw.criteria.map(tidy).filter(Boolean) : [];
+  crit = crit.slice(0, 5);
+  GENERIC_CRITERIA.forEach((g) => { if (crit.length < 3 && crit.indexOf(g) < 0) crit.push(g); });
+  d.criteria = crit;
+
+  let dl = typeof raw.deadline_iso === 'string' ? raw.deadline_iso.trim().slice(0, 16) : '';
+  if (!validISO(dl)) dl = defaultDeadline();
+  const w = weekdayOf(dl.slice(0, 10));
+  if (w === 0 || w === 6) dl = addBusinessDays(dl.slice(0, 10), 1) + dl.slice(10);
+  d.deadline_iso = dl;
+  if (d.deadline_sentence.indexOf('{DEADLINE}') < 0) d.deadline_sentence = fb.deadline_sentence;
+
+  let cp = typeof raw.checkpoint_iso === 'string' ? raw.checkpoint_iso.trim().slice(0, 16) : '';
+  if (!validISO(cp)) cp = defaultCheckpoint(dl);
+  let cps = tidy(raw.checkpoint_sentence);
+  if (cps.indexOf('{CHECKPOINT}') < 0) cps = "Let's do a quick check in around {CHECKPOINT} so I can see how it is going.";
+  d.checkpoint_enabled = !!wantCp;
+  d.checkpoint_iso = cp;
+  d.checkpoint_sentence = cps;
+  d.recipient = name;
+  d.email = i.email.trim();
+  return d;
+}
+
+/* ---------- Draft rendering ---------- */
+function signatureName() {
+  return (state.settings.signature || '').trim();
+}
+
+function composeBody() {
+  const d = state.draft;
+  if (!d) return '';
+  const parts = [];
+  if (d.greeting) parts.push(d.greeting);
+  if (d.context) parts.push(d.context);
+  parts.push('The goal: ' + d.result_statement);
+  const crit = d.criteria.filter((c) => c.trim());
+  if (crit.length) parts.push('Done looks like:\n' + crit.map((c) => BOX + ' ' + c.trim()).join('\n'));
+  if (d.authority_sentence) parts.push(d.authority_sentence);
+  parts.push(d.deadline_sentence.split('{DEADLINE}').join(formatWhen(d.deadline_iso)));
+  if (d.checkpoint_enabled && d.checkpoint_sentence) {
+    parts.push(d.checkpoint_sentence.split('{CHECKPOINT}').join(formatWhen(d.checkpoint_iso)));
+  }
+  if (d.checkback_request) parts.push(d.checkback_request);
+  const sig = signatureName();
+  parts.push(sig ? d.closing + '\n' + sig : d.closing);
+  return parts.join('\n\n');
+}
+
+function updatePreview() {
+  $('preview').textContent = composeBody();
+}
+
+function autosize(t) {
+  t.style.height = 'auto';
+  t.style.height = (t.scrollHeight + 2) + 'px';
+}
+
+function flowArea(field, label, extraClass) {
+  return el('textarea', { className: 'flow' + (extraClass ? ' ' + extraClass : ''), 'data-field': field, rows: '1', 'aria-label': label, value: state.draft[field] || '' });
+}
+
+function critRow(text) {
+  return el('li', { className: 'crit-row' }, [
+    el('input', { type: 'text', 'data-crit': '1', 'aria-label': 'Done criterion', value: text }),
+    el('button', { type: 'button', className: 'x-btn', 'data-act': 'del-crit', 'aria-label': 'Remove this criterion', text: '\u00D7' })
+  ]);
+}
+
+function renderEmpty() {
+  const body = $('draft-body');
+  body.textContent = '';
+  body.appendChild(el('div', { className: 'empty' }, [
+    el('strong', { text: 'No draft yet' }),
+    el('p', { text: 'Fill in the task and who it is for, then tap Draft the handoff. You will get an editable memo with the goal, what done looks like, their authority, and a deadline.' })
+  ]));
+  $('actions').hidden = true;
+  $('preview-wrap').hidden = true;
+}
+
+function renderSkeleton() {
+  const body = $('draft-body');
+  body.textContent = '';
+  const sk = el('div', { className: 'skeleton', 'aria-label': 'Drafting' });
+  [60, 90, 100, 80, 95, 40, 70].forEach((w) => sk.appendChild(el('i', { style: 'width:' + w + '%' })));
+  body.appendChild(sk);
+}
+
+function renderDraft() {
+  const d = state.draft;
+  if (!d) { renderEmpty(); return; }
+  const body = $('draft-body');
+  body.textContent = '';
+
+  const toLine = el('div', { className: 'memo-to' }, [d.recipient || state.intake.name || '']);
+  if (d.email) toLine.appendChild(el('span', { text: ' <' + d.email + '>' }));
+
+  const list = el('ul', { className: 'crit-list', id: 'crit-list' });
+  d.criteria.forEach((c) => list.appendChild(critRow(c)));
+
+  const cpToggle = el('button', {
+    type: 'button', className: 'switch', role: 'switch', id: 'cp-toggle',
+    'aria-checked': d.checkpoint_enabled ? 'true' : 'false', 'data-act': 'toggle-cp'
+  }, [el('span', { className: 'track', 'aria-hidden': 'true' }), el('span', { text: 'Midpoint checkpoint' })]);
+
+  const cpInput = el('input', { type: 'datetime-local', id: 'd-checkpoint', 'data-field': 'checkpoint_iso', value: d.checkpoint_iso, 'aria-label': 'Checkpoint date and time' });
+  const cpSentence = flowArea('checkpoint_sentence', 'Checkpoint sentence');
+  cpInput.disabled = !d.checkpoint_enabled;
+  cpSentence.disabled = !d.checkpoint_enabled;
+
+  const sig = signatureName();
+  const memo = el('article', { className: 'memo' }, [
+    el('div', { className: 'memo-head' }, [
+      el('div', { className: 'memo-row' }, [el('span', { className: 'memo-key', text: 'To' }), toLine]),
+      el('div', { className: 'memo-row' }, [
+        el('label', { className: 'memo-key', for: 'd-subject', text: 'Re' }),
+        el('textarea', { id: 'd-subject', className: 'flow subject', rows: '1', 'data-field': 'subject', value: d.subject })
+      ])
+    ]),
+    flowArea('greeting', 'Greeting'),
+    flowArea('context', 'Context'),
+    el('div', { className: 'part goal' }, [
+      el('span', { className: 'part-label', text: 'The goal' }),
+      flowArea('result_statement', 'Result statement')
+    ]),
+    el('div', { className: 'part' }, [
+      el('span', { className: 'part-label', text: 'Done looks like' }),
+      list,
+      el('button', { type: 'button', className: 'link-btn', 'data-act': 'add-crit', text: 'Add a criterion' })
+    ]),
+    flowArea('authority_sentence', 'Authority sentence'),
+    el('div', { className: 'when' }, [
+      el('div', { className: 'when-top' }, [
+        el('label', { for: 'd-deadline', text: 'Deadline' }),
+        el('input', { type: 'datetime-local', id: 'd-deadline', 'data-field': 'deadline_iso', value: d.deadline_iso })
+      ]),
+      flowArea('deadline_sentence', 'Deadline sentence'),
+      el('p', { className: 'token-note', text: 'The {DEADLINE} marker is replaced with the date and time above.' })
+    ]),
+    el('div', { className: 'when' + (d.checkpoint_enabled ? '' : ' off'), id: 'cp-box' }, [
+      el('div', { className: 'when-top' }, [cpToggle, cpInput]),
+      cpSentence,
+      el('p', { className: 'token-note', text: 'The {CHECKPOINT} marker is replaced with the checkpoint time.' })
+    ]),
+    flowArea('checkback_request', 'Check back request'),
+    flowArea('closing', 'Closing'),
+    el('div', { className: 'sig' + (sig ? '' : ' missing'), id: 'sig', text: sig || 'Add a signature name in Settings to sign the memo.' })
+  ]);
+
+  body.appendChild(memo);
+  $('actions').hidden = false;
+  $('preview-wrap').hidden = false;
+  $('btn-share').hidden = !(navigator && typeof navigator.share === 'function');
+  body.querySelectorAll('textarea.flow').forEach(autosize);
+  updatePreview();
+}
+
+function onDraftInput(e) {
+  const t = e.target;
+  if (!state.draft) return;
+  if (t.dataset.field) {
+    state.draft[t.dataset.field] = t.value;
+    if (t.tagName === 'TEXTAREA') autosize(t);
+  } else if (t.dataset.crit) {
+    const row = t.closest('.crit-row');
+    const idx = Array.prototype.indexOf.call(row.parentNode.children, row);
+    state.draft.criteria[idx] = t.value;
+  } else {
+    return;
+  }
+  updatePreview();
+}
+
+function onDraftClick(e) {
+  const btn = e.target.closest('[data-act]');
+  if (!btn || !state.draft) return;
+  const act = btn.dataset.act;
+  const list = $('crit-list');
+  if (act === 'add-crit') {
+    if (state.draft.criteria.length >= 5) { toast('Five criteria is the limit. Keep done focused.'); return; }
+    state.draft.criteria.push('');
+    const row = critRow('');
+    list.appendChild(row);
+    row.querySelector('input').focus();
+    updatePreview();
+  } else if (act === 'del-crit') {
+    const row = btn.closest('.crit-row');
+    const idx = Array.prototype.indexOf.call(list.children, row);
+    if (state.draft.criteria.length <= 1) { toast('Keep at least one criterion.'); return; }
+    state.draft.criteria.splice(idx, 1);
+    list.removeChild(row);
+    updatePreview();
+  } else if (act === 'toggle-cp') {
+    const on = !state.draft.checkpoint_enabled;
+    state.draft.checkpoint_enabled = on;
+    btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    $('d-checkpoint').disabled = !on;
+    document.querySelector('[data-field="checkpoint_sentence"]').disabled = !on;
+    $('cp-box').classList.toggle('off', !on);
+    updatePreview();
+  }
+}
+
+/* ---------- Output actions ---------- */
+async function copyDraft() {
+  const text = composeBody();
+  if (!text) return;
+  let ok = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      ok = true;
+    }
+  } catch (e) { ok = false; }
+  if (!ok) {
+    const ta = el('textarea', { 'aria-hidden': 'true', style: 'position:absolute;left:-9999px;top:0;opacity:0' });
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+  }
+  toast(ok ? 'Copied.' : 'Copy failed. Select the plain text below instead.');
+}
+
+function emailDraft() {
+  const d = state.draft;
+  if (!d) return;
+  const link = 'mailto:' + encodeURIComponent(d.email || state.intake.email.trim() || '') +
+    '?subject=' + encodeURIComponent(d.subject) + '&body=' + encodeURIComponent(composeBody());
+  const a = el('a', { href: link, style: 'display:none' });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+async function shareDraft() {
+  const d = state.draft;
+  if (!d || !navigator.share) return;
+  try {
+    await navigator.share({ title: d.subject, text: composeBody() });
+  } catch (e) {
+    if (e && e.name !== 'AbortError') toast('Share failed.');
+  }
+}
+
+/* ---------- History ---------- */
+function updateHistoryCount() {
+  const c = $('hist-count');
+  c.textContent = String(state.history.length);
+  c.hidden = state.history.length === 0;
+}
+
+function saveToHistory() {
+  if (!state.draft) return;
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    savedAt: new Date().toISOString(),
+    session: (state.settings.sessionName || '').trim(),
+    intake: clone(state.intake),
+    draft: clone(state.draft)
+  };
+  state.history.unshift(entry);
+  state.history = state.history.slice(0, HISTORY_CAP);
+  saveJSON(KEYS.history, state.history);
+  updateHistoryCount();
+  toast('Saved to history.');
+}
+
+function renderHistory() {
+  const list = $('hist-list');
+  list.textContent = '';
+  if (!state.history.length) {
+    list.appendChild(el('li', { className: 'hist-empty', text: 'Nothing saved yet. Save a draft and it will appear here for reuse.' }));
+    return;
+  }
+  state.history.forEach((h) => {
+    const when = new Date(h.savedAt);
+    const whenText = isNaN(when) ? '' : when.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const meta = ['To ' + ((h.draft && h.draft.recipient) || (h.intake && h.intake.name) || 'someone'), whenText];
+    if (h.session) meta.push(h.session);
+    list.appendChild(el('li', { className: 'hist-item' }, [
+      el('div', {}, [
+        el('h3', { text: (h.draft && h.draft.subject) || 'Untitled handoff' }),
+        el('p', { text: meta.filter(Boolean).join(', ') })
+      ]),
+      el('div', { className: 'hist-btns' }, [
+        el('button', { type: 'button', 'data-act': 'reuse', 'data-id': h.id, text: 'Reuse' }),
+        el('button', { type: 'button', 'data-act': 'delete', 'data-id': h.id, text: 'Delete' })
+      ])
+    ]));
+  });
+}
+
+function reuseEntry(id) {
+  const h = state.history.find((x) => x.id === id);
+  if (!h) return;
+  state.intake = Object.assign({}, DEFAULT_INTAKE, h.intake || {});
+  saveJSON(KEYS.intake, state.intake);
+  fillIntake();
+  state.draft = h.draft ? clone(h.draft) : null;
+  renderDraft();
+  closeHistory();
+  toast('Loaded from history.');
+}
+
+function deleteEntry(id, btn) {
+  if (btn.dataset.armed !== '1') {
+    btn.dataset.armed = '1';
+    btn.classList.add('armed');
+    btn.textContent = 'Tap again to delete';
+    setTimeout(() => {
+      if (btn.isConnected && btn.dataset.armed === '1') {
+        btn.dataset.armed = '';
+        btn.classList.remove('armed');
+        btn.textContent = 'Delete';
+      }
+    }, 3000);
+    return;
+  }
+  state.history = state.history.filter((x) => x.id !== id);
+  saveJSON(KEYS.history, state.history);
+  updateHistoryCount();
+  renderHistory();
+  toast('Deleted.');
+}
+
+function openHistory() {
+  renderHistory();
+  const scrim = $('history-scrim');
+  scrim.hidden = false;
+  requestAnimationFrame(() => $('history-sheet').classList.add('open'));
+  $('btn-history-close').focus();
+}
+function closeHistory() {
+  $('history-sheet').classList.remove('open');
+  $('history-scrim').hidden = true;
+}
+
+/* ---------- Settings ---------- */
+function openSettings() {
+  $('s-key').value = state.settings.apiKey || '';
+  $('s-session').value = state.settings.sessionName || '';
+  $('s-sig').value = state.settings.signature || '';
+  $('settings-scrim').hidden = false;
+  $('s-key').focus();
+}
+function closeSettings() { $('settings-scrim').hidden = true; }
+function saveSettings() {
+  state.settings.apiKey = $('s-key').value.trim();
+  state.settings.sessionName = $('s-session').value.trim();
+  state.settings.signature = $('s-sig').value.trim();
+  saveJSON(KEYS.settings, state.settings);
+  closeSettings();
+  if (state.draft) {
+    const sig = $('sig');
+    const s = signatureName();
+    sig.textContent = s || 'Add a signature name in Settings to sign the memo.';
+    sig.classList.toggle('missing', !s);
+    updatePreview();
+  }
+  toast('Settings saved.');
+}
+
+/* ---------- Init ---------- */
+let booted = false;
+function init() {
+  if (booted) return;
+  booted = true;
+  fillIntake();
+  renderEmpty();
+  updateHistoryCount();
+
+  const form = $('intake');
+  form.addEventListener('input', onIntakeInput);
+  form.addEventListener('change', onIntakeInput);
+  form.addEventListener('click', onSegClick);
+  $('btn-generate').addEventListener('click', generateDraft);
+  $('btn-regen').addEventListener('click', generateDraft);
+
+  const draftBody = $('draft-body');
+  draftBody.addEventListener('input', onDraftInput);
+  draftBody.addEventListener('change', onDraftInput);
+  draftBody.addEventListener('click', onDraftClick);
+
+  $('btn-copy').addEventListener('click', copyDraft);
+  $('btn-email').addEventListener('click', emailDraft);
+  $('btn-share').addEventListener('click', shareDraft);
+  $('btn-save').addEventListener('click', saveToHistory);
+
+  $('btn-settings').addEventListener('click', openSettings);
+  $('btn-settings-save').addEventListener('click', saveSettings);
+  $('btn-settings-cancel').addEventListener('click', closeSettings);
+  $('settings-scrim').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeSettings(); });
+
+  $('btn-history').addEventListener('click', openHistory);
+  $('btn-history-close').addEventListener('click', closeHistory);
+  $('history-scrim').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeHistory(); });
+  $('hist-list').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-act]');
+    if (!b) return;
+    if (b.dataset.act === 'reuse') reuseEntry(b.dataset.id);
+    else if (b.dataset.act === 'delete') deleteEntry(b.dataset.id, b);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!$('settings-scrim').hidden) closeSettings();
+    else if (!$('history-scrim').hidden) closeHistory();
+  });
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('#draft-body textarea.flow').forEach(autosize);
+  });
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+</script>
+</body>
+</html>
