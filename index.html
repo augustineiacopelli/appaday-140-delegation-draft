@@ -375,7 +375,7 @@ footer a{display:inline-flex;align-items:center;min-height:44px}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const CLAUDE_MODEL = 'claude-sonnet-5';
+const CLAUDE_MODEL = await getModel();
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const KEYS = { settings: 'appaday-140-settings', intake: 'appaday-140-intake', history: 'appaday-140-history' };
 const HISTORY_CAP = 25;
@@ -1200,6 +1200,17 @@ function init() {
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
+
+async function getModel(tier = 'sonnet') {
+  try {
+    const response = await fetch('../config.json');
+    const config = await response.json();
+    return config.models[tier];
+  } catch {
+    return 'claude-sonnet-5-5';
+  }
+}
 </script>
 </body>
 </html>
+
