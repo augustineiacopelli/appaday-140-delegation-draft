@@ -10,6 +10,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="manifest" href="https://augustineiacopelli.github.io/appaday/manifests/140.webmanifest">
 <script src="https://augustineiacopelli.github.io/appaday/save.js" defer></script>
+<script src="https://augustineiacopelli.github.io/appaday/models.js"></script>
+<script src="https://augustineiacopelli.github.io/appaday/keys.js" data-app="140" data-legacy-key="appaday-140-settings:apiKey" data-accent="#C8401A" defer></script>
 <title>Delegation Draft | AppADay 140</title>
 <meta name="description" content="Turn a task into a clear delegation message that defines the outcome, the authority, and the deadline.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -348,10 +350,7 @@ footer a{display:inline-flex;align-items:center;min-height:44px}
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
     <h2 id="settings-title">Settings</h2>
     <p class="lede">Stored only in this browser.</p>
-    <div class="field">
-      <label for="s-key">Anthropic API key</label>
-      <input type="password" id="s-key" placeholder="sk-ant-..." autocomplete="off" spellcheck="false">
-    </div>
+    <div class="field" id="keyMount"><p class="lede">The key manager is loading. If this stays, check your connection and reload.</p></div>
     <div class="field">
       <label for="s-session">Session name <span class="hint">(labels your history)</span></label>
       <input type="text" id="s-session" placeholder="Fall front desk">
@@ -382,7 +381,7 @@ footer a{display:inline-flex;align-items:center;min-height:44px}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const CLAUDE_MODEL = await getModel();
+let CLAUDE_MODEL = (window.AppModels ? window.AppModels.id('sonnet') : '');
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const KEYS = { settings: 'appaday-140-settings', intake: 'appaday-140-intake', history: 'appaday-140-history' };
 const HISTORY_CAP = 25;
@@ -467,7 +466,7 @@ function saveJSON(key, value) {
 const state = {
   intake: Object.assign({}, DEFAULT_INTAKE, loadJSON(KEYS.intake, {})),
   draft: null,
-  settings: Object.assign({ apiKey: '', sessionName: '', signature: '' }, loadJSON(KEYS.settings, {})),
+  settings: Object.assign({ sessionName: '', signature: '' }, loadJSON(KEYS.settings, {})),
   history: loadJSON(KEYS.history, []),
   busy: false
 };
@@ -675,14 +674,12 @@ function setLoading(on) {
 
 async function generateDraft() {
   if (state.busy) return;
-  if (!state.settings.apiKey) {
-    toast('Add your Anthropic API key in Settings to draft.');
-    openSettings();
-    return;
-  }
   const i = state.intake;
   if (!i.task.trim()) { toast('Describe the task first.'); $('f-task').focus(); return; }
   if (!i.name.trim()) { toast("Add the recipient's first name."); $('f-name').focus(); return; }
+  if (!window.AppKeys) { toast('The key manager did not load. Check your connection and reload.'); return; }
+  const apiKey = await window.AppKeys.get();
+  if (!apiKey) { toast('Add your Claude API key with the Settings button to draft.'); return; }
 
   const wantCp = checkpointWanted();
   setLoading(true);
@@ -691,7 +688,7 @@ async function generateDraft() {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: {
-        'x-api-key': state.settings.apiKey,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
         'content-type': 'application/json',
         'anthropic-dangerous-direct-browser-access': 'true'
@@ -1131,15 +1128,14 @@ function closeHistory() {
 
 /* ---------- Settings ---------- */
 function openSettings() {
-  $('s-key').value = state.settings.apiKey || '';
+  if (window.AppKeys) window.AppKeys.mountSettings($('keyMount'));
   $('s-session').value = state.settings.sessionName || '';
   $('s-sig').value = state.settings.signature || '';
   $('settings-scrim').hidden = false;
-  $('s-key').focus();
 }
 function closeSettings() { $('settings-scrim').hidden = true; }
 function saveSettings() {
-  state.settings.apiKey = $('s-key').value.trim();
+  delete state.settings.apiKey;
   state.settings.sessionName = $('s-session').value.trim();
   state.settings.signature = $('s-sig').value.trim();
   saveJSON(KEYS.settings, state.settings);
@@ -1208,15 +1204,6 @@ function init() {
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
 
-async function getModel(tier = 'sonnet') {
-  try {
-    const response = await fetch('../config.json');
-    const config = await response.json();
-    return config.models[tier];
-  } catch {
-    return 'claude-sonnet-5-5';
-  }
-}
 </script>
 </body>
 </html>
