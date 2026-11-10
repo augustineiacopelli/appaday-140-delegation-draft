@@ -636,7 +636,7 @@ function buildPrompt() {
       : '6. Do not include a checkpoint. Set checkpoint_iso and checkpoint_sentence to null.',
     '7. Never use a dash of any kind as a clause separator. Use commas, periods, or separate sentences. Plain ASCII punctuation only.',
     '8. greeting is short, like "Hi Maria,". context explains why the work matters in two or three sentences. checkback_request asks them to reply confirming it makes sense and to raise questions early. closing is one short line of thanks with no signature or name after it. subject is under 70 characters.',
-    '9. Deliver the memo by calling the write_draft tool once. Its fields follow this shape:',
+    '9. Reply with only one JSON object and nothing else: no prose before or after it and no markdown fences. It has exactly this shape:',
     '{"subject":"","greeting":"","context":"","result_statement":"","criteria":["","",""],"authority_sentence":"","deadline_iso":"YYYY-MM-DDTHH:MM","deadline_sentence":"... {DEADLINE} ...","checkpoint_iso":"YYYY-MM-DDTHH:MM or null","checkpoint_sentence":"... {CHECKPOINT} ... or null","checkback_request":"","closing":""}'
   ].join('\n');
 
@@ -685,8 +685,8 @@ async function generateDraft() {
   setLoading(true);
   try {
     const p = buildPrompt();
-    // Sonnet 5.5 rejects a forced tool_choice, so the tool is offered with auto. If a reply comes back
-    // without the tool call (prose, a question, or a cut off), ask once more for the tool call itself.
+    // The memo comes back as a JSON object in the reply text. Sonnet 5.5 rejects a forced tool_choice and,
+    // offered the tool with auto, often answered in prose instead. If a reply still cannot be read, ask once more.
     const send = async (messages) => {
       const res = await fetch(API_URL, {
         method: 'POST',
@@ -700,8 +700,6 @@ async function generateDraft() {
           model: CLAUDE_MODEL,
           max_tokens: 4000,
           thinking: (window.AppModels && window.AppModels.thinking ? window.AppModels.thinking(CLAUDE_MODEL) : undefined),
-          tools: [DRAFT_TOOL],
-          tool_choice: { type: 'auto' },
           system: p.system,
           messages: messages
         })
@@ -719,7 +717,7 @@ async function generateDraft() {
     let raw = null;
     try { raw = parseReply(data); } catch (e) {
       const prior = Array.isArray(data.content) ? data.content.filter((b) => b && b.type !== 'tool_use') : [];
-      const ask = 'Deliver the memo now by calling the write_draft tool once, with every field filled. Do not reply in prose.';
+      const ask = 'Reply now with only the JSON object described in your instructions, every field filled, and nothing else.';
       const nudge = prior.length
         ? first.concat([{ role: 'assistant', content: prior }, { role: 'user', content: ask }])
         : [{ role: 'user', content: p.user + '\n\n' + ask }];
