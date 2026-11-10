@@ -685,31 +685,48 @@ async function generateDraft() {
   setLoading(true);
   try {
     const p = buildPrompt();
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: CLAUDE_MODEL,
-        max_tokens: 1500,
-        thinking: (window.AppModels && window.AppModels.thinking ? window.AppModels.thinking(CLAUDE_MODEL) : undefined),
-        tools: [DRAFT_TOOL],
-        tool_choice: { type: 'auto' },
-        system: p.system,
-        messages: [{ role: 'user', content: p.user }]
-      })
-    });
-    let data = {};
-    try { data = await res.json(); } catch (e) { data = {}; }
-    if (!res.ok) {
-      const msg = (data && data.error && data.error.message) || res.statusText || 'request failed';
-      throw new Error('API error ' + res.status + ': ' + msg);
+    // Sonnet 5.5 rejects a forced tool_choice, so the tool is offered with auto. If a reply comes back
+    // without the tool call (prose, a question, or a cut off), ask once more for the tool call itself.
+    const send = async (messages) => {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: CLAUDE_MODEL,
+          max_tokens: 4000,
+          thinking: (window.AppModels && window.AppModels.thinking ? window.AppModels.thinking(CLAUDE_MODEL) : undefined),
+          tools: [DRAFT_TOOL],
+          tool_choice: { type: 'auto' },
+          system: p.system,
+          messages: messages
+        })
+      });
+      let body = {};
+      try { body = await res.json(); } catch (e) { body = {}; }
+      if (!res.ok) {
+        const msg = (body && body.error && body.error.message) || res.statusText || 'request failed';
+        throw new Error('API error ' + res.status + ': ' + msg);
+      }
+      return body;
+    };
+    const first = [{ role: 'user', content: p.user }];
+    let data = await send(first);
+    let raw = null;
+    try { raw = parseReply(data); } catch (e) {
+      const prior = Array.isArray(data.content) ? data.content.filter((b) => b && b.type !== 'tool_use') : [];
+      const ask = 'Deliver the memo now by calling the write_draft tool once, with every field filled. Do not reply in prose.';
+      const nudge = prior.length
+        ? first.concat([{ role: 'assistant', content: prior }, { role: 'user', content: ask }])
+        : [{ role: 'user', content: p.user + '\n\n' + ask }];
+      data = await send(nudge);
+      raw = parseReply(data);
     }
-    state.draft = validateDraft(parseReply(data), wantCp);
+    state.draft = validateDraft(raw, wantCp);
     renderDraft();
     toast('Draft ready.');
   } catch (err) {
