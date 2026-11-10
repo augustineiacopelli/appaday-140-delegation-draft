@@ -696,9 +696,9 @@ async function generateDraft() {
       body: JSON.stringify({
         model: CLAUDE_MODEL,
         max_tokens: 1500,
-        thinking: { type: 'disabled' },
+        thinking: (window.AppModels && window.AppModels.thinking ? window.AppModels.thinking(CLAUDE_MODEL) : undefined),
         tools: [DRAFT_TOOL],
-        tool_choice: { type: 'tool', name: 'write_draft' },
+        tool_choice: { type: 'auto' },
         system: p.system,
         messages: [{ role: 'user', content: p.user }]
       })
